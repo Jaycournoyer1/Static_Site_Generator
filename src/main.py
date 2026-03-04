@@ -1,14 +1,10 @@
 from textnode import TextNode, TextType
-from htmlnode import HTMLNode
+
 
 def main():
-    #node = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-    #print(node)
-    node = HTMLNode("p", "hello", None, None)
+    node = TextNode("This is a text node", TextType.BOLD, "https://www.boot.dev")
     print(node)
 
-    
 
-    
 if __name__ == "__main__":
-    main()
+    main()  # Run only when this file is executed directly.
