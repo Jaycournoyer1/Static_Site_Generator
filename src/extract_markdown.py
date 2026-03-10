@@ -10,6 +10,16 @@ def extract_markdown_images(text):
 
 def extract_markdown_links(text):
     """Extract all Markdown links as `(link_text, url)` tuples from a string."""
-    pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"  # Match [text](url), but not images.
+    pattern = (
+        r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"  # Match [text](url), but not images.
+    )
     matches = re.findall(pattern, text)  # Return every (text, url) pair found in order.
     return matches  # Example: [("Boot.dev", "https://boot.dev")].
+
+
+def extract_title(markdown):
+    lines = markdown.split("\n")
+    for line in lines:
+        if line.startswith("# "):
+            return line[2:].strip()
+    raise Exception("no h1 header")

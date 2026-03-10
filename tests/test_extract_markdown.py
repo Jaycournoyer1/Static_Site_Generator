@@ -1,6 +1,10 @@
 import unittest
 
-from extract_markdown import extract_markdown_images, extract_markdown_links
+from extract_markdown import (
+    extract_markdown_images,
+    extract_markdown_links,
+    extract_title,
+)
 
 
 class TestExtractMarkdown(unittest.TestCase):
@@ -52,9 +56,7 @@ class TestExtractMarkdown(unittest.TestCase):
         self.assertListEqual([("link", "https://example.com")], matches)
 
     def test_extract_markdown_links_multiple_matches(self):
-        text = (
-            "Read [first](https://a.com) then [second](https://b.com/path) now."
-        )
+        text = "Read [first](https://a.com) then [second](https://b.com/path) now."
         matches = extract_markdown_links(text)
         self.assertListEqual(
             [("first", "https://a.com"), ("second", "https://b.com/path")], matches
@@ -88,6 +90,41 @@ class TestExtractMarkdown(unittest.TestCase):
         text = "Before\n[multi line link](https://a.com/path)\nAfter"
         matches = extract_markdown_links(text)
         self.assertListEqual([("multi line link", "https://a.com/path")], matches)
+
+    def test_extract_title_basic_valid_h1(self):
+        markdown = "# Hello World"
+        title = extract_title(markdown)
+        self.assertEqual("Hello World", title)
+
+    def test_extract_title_h1_with_extra_whitespace(self):
+        markdown = "#   Hello World   "
+        title = extract_title(markdown)
+        self.assertEqual("Hello World", title)
+
+    def test_extract_title_h1_not_on_first_line(self):
+        markdown = "Intro paragraph\n# Document Title\nMore text"
+        title = extract_title(markdown)
+        self.assertEqual("Document Title", title)
+
+    def test_extract_title_returns_first_h1_when_multiple_exist(self):
+        markdown = "# First Title\n## Subtitle\n# Second Title"
+        title = extract_title(markdown)
+        self.assertEqual("First Title", title)
+
+    def test_extract_title_ignores_non_h1_headings(self):
+        markdown = "## Section Title\n### Smaller Heading\n# Actual Title"
+        title = extract_title(markdown)
+        self.assertEqual("Actual Title", title)
+
+    def test_extract_title_allows_empty_h1_title(self):
+        markdown = "#   "
+        title = extract_title(markdown)
+        self.assertEqual("", title)
+
+    def test_extract_title_raises_exception_when_no_h1_present(self):
+        markdown = "Paragraph text\n## Section Title\n- List item"
+        with self.assertRaisesRegex(Exception, "no h1 header"):
+            extract_title(markdown)
 
 
 if __name__ == "__main__":
