@@ -8,14 +8,10 @@ def markdown_to_blocks(markdown):
     """Split markdown text into non-empty blocks separated by blank lines."""
 
     blocks = []  # Final list of cleaned, non-empty block strings.
-    pieces = markdown.split(
-        "\n\n"
-    )  # Split only on double newlines (blank-line boundaries).
+    pieces = markdown.split("\n\n")  # Split only on double newlines (blank-line boundaries).
 
     for piece in pieces:
-        block = (
-            piece.strip()
-        )  # Remove outer whitespace/newlines from each candidate block.
+        block = (piece.strip())  # Remove outer whitespace/newlines from each candidate block.
         if block != "":
             blocks.append(block)  # Keep only meaningful blocks.
     return blocks  # Return blocks in original order.
@@ -50,6 +46,8 @@ def markdown_to_html_node(markdown):
 
     return ParentNode("div", block_nodes)  # Wrap all block nodes under a single root.
 
+
+""" Helper functions for markdown_to_html_node() """
 
 def text_to_children(text):
     """Convert inline markdown text into a list of HTML child nodes."""

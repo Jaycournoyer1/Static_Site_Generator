@@ -20,6 +20,7 @@ def extract_markdown_links(text):
 def extract_title(markdown):
     """Return the text from the first Markdown h1 heading."""
     lines = markdown.split("\n")  # Break the Markdown string into individual lines.
+    
     for line in lines:  # Check each line until an h1 heading is found.
         if line.startswith("# "):  # Match only top-level headings that begin with "# ".
             return line[2:].strip()  # Remove the "# " prefix and surrounding whitespace.
