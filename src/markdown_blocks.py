@@ -1,14 +1,17 @@
-from text_to_nodes import text_to_textnodes
-from textnode import text_node_to_html_node
-from htmlnode import ParentNode, LeafNode
-from blocktype import BlockType, block_to_block_type
+import re
+
+from .text_to_nodes import text_to_textnodes
+from .textnode import text_node_to_html_node
+from .htmlnode import ParentNode, LeafNode
+from .blocktype import BlockType, block_to_block_type
 
 
 def markdown_to_blocks(markdown):
     """Split markdown text into non-empty blocks separated by blank lines."""
 
     blocks = []  # Final list of cleaned, non-empty block strings.
-    pieces = markdown.split("\n\n")  # Split only on double newlines (blank-line boundaries).
+    normalized_markdown = markdown.replace("\r\n", "\n").replace("\r", "\n")  # Normalize line endings before splitting into blocks.
+    pieces = re.split(r"\n\s*\n", normalized_markdown)  # Split on blank lines, allowing whitespace-only separators.
 
     for piece in pieces:
         block = (piece.strip())  # Remove outer whitespace/newlines from each candidate block.
@@ -47,7 +50,7 @@ def markdown_to_html_node(markdown):
     return ParentNode("div", block_nodes)  # Wrap all block nodes under a single root.
 
 
-""" Helper functions for markdown_to_html_node() """
+"""Helper functions for markdown_to_html_node()."""
 
 def text_to_children(text):
     """Convert inline markdown text into a list of HTML child nodes."""
@@ -78,7 +81,9 @@ def quote_block_to_html_node(block):
     lines = block.split("\n")  # Split quote block into individual source lines.
     cleaned_lines = []  # Store quote lines with the markdown marker removed.
     for line in lines:  # Remove leading "> " from each quote line.
-        cleaned_lines.append(line[2:])  # Keep only the quote text content.
+        cleaned_lines.append(
+            line[2:] if line.startswith("> ") else line[1:]
+        )  # Support both "> text" and ">text".
     text = "\n".join(cleaned_lines)  # Reassemble quote text with line breaks preserved.
     children = text_to_children(text)  # Parse inline markdown inside the quote content.
     return ParentNode("blockquote", children)  # Wrap parsed quote text in <blockquote>.
@@ -100,7 +105,7 @@ def ordered_list_to_html_node(block):
     lines = block.split("\n")  # Split ordered list into one line per numbered item.
     list_items = []  # Collect generated <li> nodes.
     for line in lines:  # Process each numbered line in order.
-        list_number, list_text = line.split(" ", 1)  # Split "1." token from item content.
+        list_number, list_text = line.split(" ", 1)  # Split the numeric marker from the item content.
         children = text_to_children(list_text)  # Parse inline markdown in item text.
         list_items.append(ParentNode("li", children))  # Store item as an <li> node.
     return ParentNode("ol", list_items)  # Wrap items in an <ol> node.
@@ -110,19 +115,6 @@ def code_block_to_html_node(block):
     """Convert a fenced markdown code block into <pre><code> HTML nodes."""
     lines = block.split("\n")  # Split entire fenced code block into lines.
     code_lines = lines[1:-1]  # Remove opening/closing triple-backtick fence lines.
-
-    non_empty = [line for line in code_lines if line.strip() != ""]  # Ignore blank lines.
-    common_indent = 0  # Default to no dedent if block has no non-empty lines.
-    if non_empty:  # Find smallest leading-space indentation across content lines.
-        common_indent = min(len(line) - len(line.lstrip(" ")) for line in non_empty)
-
-    dedented = []  # Store code lines after removing shared leading indentation.
-    for line in code_lines:  # Dedent every line by the common indent amount.
-        if len(line) >= common_indent:  # Only slice when line length can support dedent.
-            dedented.append(line[common_indent:])  # Remove shared leading spaces.
-        else:
-            dedented.append(line)  # Keep very short lines unchanged for safety.
-
-    text = "\n".join(dedented) + "\n"  # Rebuild code text with a trailing newline.
+    text = "\n".join(code_lines) + "\n"  # Preserve fenced code exactly as authored.
     code_node = LeafNode("code", text)  # Create leaf <code> element containing raw text.
     return ParentNode("pre", [code_node])  # Wrap <code> inside <pre> for code blocks.

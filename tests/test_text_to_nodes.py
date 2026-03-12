@@ -1,20 +1,23 @@
 import unittest
 
-from textnode import TextNode, TextType
-from text_to_nodes import text_to_textnodes
+from src.textnode import TextNode, TextType
+from src.text_to_nodes import text_to_textnodes
 
 
 class TestTextToNodes(unittest.TestCase):
     def test_plain_text(self):
+        # Verify that plain text becomes a single TEXT node.
         result = text_to_textnodes("just text")
         expected = [TextNode("just text", TextType.TEXT)]
         self.assertEqual(result, expected)
 
     def test_empty_string_returns_empty_list(self):
+        # Verify that an empty string produces no text nodes.
         result = text_to_textnodes("")
         self.assertEqual(result, [])
 
     def test_mixed_all_supported_types(self):
+        # Verify that all supported inline markdown forms are tokenized correctly.
         result = text_to_textnodes(
             "This is **bold** and _italic_ with `code`, a [link](https://a.com), and ![img](https://a.com/img.png)."
         )
@@ -34,6 +37,7 @@ class TestTextToNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_back_to_back_inline_elements(self):
+        # Verify that adjacent inline elements are parsed without extra separators.
         result = text_to_textnodes(
             "**b**_i_`c`![img](https://a.com/i.png)[lnk](https://a.com)"
         )
@@ -47,18 +51,22 @@ class TestTextToNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_invalid_unmatched_bold_delimiter_raises(self):
+        # Verify that unmatched bold markers raise an exception.
         with self.assertRaises(Exception):
             text_to_textnodes("this is **broken")
 
     def test_invalid_unmatched_italic_delimiter_raises(self):
+        # Verify that unmatched italic markers raise an exception.
         with self.assertRaises(Exception):
             text_to_textnodes("this is _broken")
 
     def test_invalid_unmatched_code_delimiter_raises(self):
+        # Verify that unmatched code markers raise an exception.
         with self.assertRaises(Exception):
             text_to_textnodes("this is `broken")
 
     def test_markdown_inside_non_text_node_is_not_reparsed(self):
+        # Verify that markdown inside already formatted nodes is not reparsed.
         result = text_to_textnodes(
             "**bold [x](https://a.com) ![i](https://a.com/i.png) `c` _y_**"
         )
@@ -71,6 +79,7 @@ class TestTextToNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_image_and_link_parsed_from_text_node_after_delimiters(self):
+        # Verify that links and images are still parsed after delimiter splitting.
         result = text_to_textnodes(
             "prefix _mid_ [x](https://a.com) ![i](https://a.com/i.png) suffix"
         )

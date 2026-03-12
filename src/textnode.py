@@ -1,5 +1,5 @@
 from enum import Enum
-from htmlnode import LeafNode
+from .htmlnode import LeafNode
 
 
 class TextType(Enum):
@@ -26,7 +26,11 @@ class TextNode:
         if not isinstance(other, TextNode):  # Different object types are never equal.
             return False
 
-        return self.text == other.text and self.text_type == other.text_type and self.url == other.url  # Compare fields.
+        return (
+            self.text == other.text
+            and self.text_type == other.text_type
+            and self.url == other.url
+        )  # Compare fields.
 
     def __repr__(self):
         return f"TextNode({self.text}, {self.text_type.value}, {self.url})"  # Developer-friendly debug string.

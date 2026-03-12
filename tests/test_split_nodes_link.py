@@ -1,11 +1,12 @@
 import unittest
 
-from textnode import TextNode, TextType
-from splitnodesdelimiter import split_nodes_link
+from src.textnode import TextNode, TextType
+from src.splitnodesdelimiter import split_nodes_link
 
 
 class TestSplitNodesLink(unittest.TestCase):
     def test_split_links_multiple(self):
+        # Verify that multiple links are split out of one text node in order.
         node = TextNode(
             "This is text with a [link](https://boot.dev) and another [second link](https://blog.boot.dev)",
             TextType.TEXT,
@@ -22,16 +23,19 @@ class TestSplitNodesLink(unittest.TestCase):
         )
 
     def test_split_links_none(self):
+        # Verify that text without links is returned unchanged.
         node = TextNode("Just plain text", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertListEqual([node], new_nodes)
 
     def test_split_links_non_text_passthrough(self):
+        # Verify that non-text nodes are passed through untouched.
         node = TextNode("bold", TextType.BOLD)
         new_nodes = split_nodes_link([node])
         self.assertListEqual([node], new_nodes)
 
     def test_split_links_at_start(self):
+        # Verify that a link at the start becomes a link node followed by text.
         node = TextNode("[link](https://boot.dev) after", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertListEqual(
@@ -43,6 +47,7 @@ class TestSplitNodesLink(unittest.TestCase):
         )
 
     def test_split_links_at_end(self):
+        # Verify that a link at the end becomes trailing link output.
         node = TextNode("before [link](https://boot.dev)", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertListEqual(
@@ -54,6 +59,7 @@ class TestSplitNodesLink(unittest.TestCase):
         )
 
     def test_split_links_back_to_back(self):
+        # Verify that adjacent links are both extracted without extra empty text nodes.
         node = TextNode("x [a](https://a.com)[b](https://b.com) y", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertListEqual(

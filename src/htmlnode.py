@@ -1,3 +1,23 @@
+from html import escape
+
+
+VOID_TAGS = {
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "source",
+    "track",
+    "wbr",
+}  # HTML tags that should not render a closing tag.
+
+
 class HTMLNode:
     """Base HTML node that stores shared element data and helper behavior."""
 
@@ -14,7 +34,9 @@ class HTMLNode:
         """Serialize attribute dictionary into HTML attribute text."""
         if not self.props:  # If there are no attributes, return an empty suffix.
             return ""
-        return "".join(f' {key}="{value}"' for key, value in self.props.items())  # Build: key="value".
+        return "".join(
+            f' {key}="{escape(str(value), quote=True)}"' for key, value in self.props.items()
+        )  # Build: key="value".
 
     def __repr__(self):
         return f"HTMLNode({self.tag}, {self.value}, children: {self.children}, {self.props})"  # Debug view.
@@ -32,9 +54,12 @@ class LeafNode(HTMLNode):
             raise ValueError("invalid HTML: no value")
 
         if self.tag is None:  # Plain text node without a wrapping HTML tag.
-            return str(self.value)
+            return escape(str(self.value))
 
-        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"  # Normal tagged element.
+        if self.tag in VOID_TAGS:
+            return f"<{self.tag}{self.props_to_html()}>"  # Void elements do not render closing tags.
+
+        return f"<{self.tag}{self.props_to_html()}>{escape(str(self.value))}</{self.tag}>"  # Normal tagged element.
 
     def __repr__(self):
         return f"LeafNode(tag={repr(self.tag)}, value={repr(self.value)}, props={repr(self.props)})"  # Debug view.

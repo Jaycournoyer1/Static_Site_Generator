@@ -1,17 +1,17 @@
 import os
 from pathlib import Path
-from extract_markdown import extract_title
-from markdown_blocks import markdown_to_html_node
+from .extract_markdown import extract_title
+from .markdown_blocks import markdown_to_html_node
 
 
 def generate_page(from_path, template_path, dest_path, basepath):
     """Build one HTML page from a Markdown file and an HTML template."""
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")  # Show which file is being converted.
 
-    with open(from_path) as f:  # Open the source Markdown file for reading.
+    with open(from_path, encoding="utf-8") as f:  # Open the source Markdown file for reading.
         markdown = f.read()  # Load the entire Markdown file into memory.
 
-    with open(template_path) as f:  # Open the HTML template file for reading.
+    with open(template_path, encoding="utf-8") as f:  # Open the HTML template file for reading.
         template = f.read()  # Load the template contents into memory.
 
     html_node = markdown_to_html_node(markdown)  # Convert Markdown text into an HTML node tree.
@@ -28,8 +28,9 @@ def generate_page(from_path, template_path, dest_path, basepath):
     if not os.path.exists(directory):  # Create the folder path if it does not already exist.
         os.makedirs(directory)  # Make any missing directories in the destination path.
 
-    with open(dest_path, "w") as f:  # Open the destination HTML file for writing.
+    with open(dest_path, "w", encoding="utf-8") as f:  # Open the destination HTML file for writing.
         f.write(template)  # Save the completed HTML page.
+
 
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     """Walk the content tree and generate HTML pages for every Markdown file."""

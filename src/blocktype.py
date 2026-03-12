@@ -3,6 +3,8 @@ from enum import Enum
 
 
 class BlockType(Enum):
+    """Enumerate the supported Markdown block-level node types."""
+
     PARAGRAPH = "paragraph"
     HEADING = "heading"
     CODE = "code"
@@ -12,6 +14,8 @@ class BlockType(Enum):
 
 
 def block_to_block_type(block):
+    """Classify a markdown block by checking the supported syntax patterns in order."""
+
     if block.startswith("```") and block.endswith("```"):
         # must start with ```\n (per spec)
         if block.startswith("```\n"):
@@ -21,7 +25,7 @@ def block_to_block_type(block):
     if re.match(r"^#{1,6} ", block):
         return BlockType.HEADING
 
-    lines = block.split("\n")
+    lines = block.split("\n")  # Split once so the remaining multi-line checks can reuse the same lines.
 
     # QUOTE: every line starts with >
     if all(line.startswith(">") for line in lines):
@@ -40,4 +44,4 @@ def block_to_block_type(block):
     if is_ordered:
         return BlockType.ORDERED_LIST
 
-    return BlockType.PARAGRAPH
+    return BlockType.PARAGRAPH  # Treat anything unmatched as a normal paragraph block.

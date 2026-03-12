@@ -1,8 +1,8 @@
 import os
 import sys
 import shutil
-from copystatic import copy_static
-from generate_page import generate_page, generate_pages_recursive
+from .copystatic import copy_static
+from .generate_page import generate_pages_recursive
 
 dir_path_static = "./static"  # Store the folder that contains images, CSS, and other static files.
 dir_path_public = "./docs"  # Store the output folder where the generated site will be written.

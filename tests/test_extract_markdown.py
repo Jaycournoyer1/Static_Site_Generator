@@ -1,6 +1,6 @@
 import unittest
 
-from extract_markdown import (
+from src.extract_markdown import (
     extract_markdown_images,
     extract_markdown_links,
     extract_title,
@@ -9,12 +9,14 @@ from extract_markdown import (
 
 class TestExtractMarkdown(unittest.TestCase):
     def test_extract_markdown_images_single_match(self):
+        # Verify that one markdown image is extracted correctly.
         matches = extract_markdown_images(
             "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
         )
         self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
 
     def test_extract_markdown_images_multiple_matches(self):
+        # Verify that multiple markdown images are returned in order.
         text = (
             "Start ![first](https://a.com/1.png) middle "
             "![second](https://a.com/2.png) end"
@@ -26,19 +28,23 @@ class TestExtractMarkdown(unittest.TestCase):
         )
 
     def test_extract_markdown_images_empty_alt_and_url(self):
+        # Verify that an empty image alt text and URL are still matched.
         matches = extract_markdown_images("An empty image ![]() here")
         self.assertListEqual([("", "")], matches)
 
     def test_extract_markdown_images_no_match_for_plain_link(self):
+        # Verify that plain links are not mistaken for images.
         matches = extract_markdown_images("[link](https://example.com)")
         self.assertListEqual([], matches)
 
     def test_extract_markdown_images_no_match_for_malformed_markdown(self):
+        # Verify that malformed image syntax is ignored.
         text = "Broken ![image](https://a.com and ![another](https://b.com"
         matches = extract_markdown_images(text)
         self.assertListEqual([], matches)
 
     def test_extract_markdown_images_no_match_with_nested_brackets_or_parens(self):
+        # Verify that unsupported nested brackets or parentheses are not matched as images.
         text = (
             "![with [brackets]](https://a.com/x.png) "
             "![ok](https://a.com/image(test).png)"
@@ -47,15 +53,18 @@ class TestExtractMarkdown(unittest.TestCase):
         self.assertListEqual([], matches)
 
     def test_extract_markdown_images_multiline(self):
+        # Verify that images can be extracted when surrounded by newlines.
         text = "Before\n![multi line alt](https://a.com/img.png)\nAfter"
         matches = extract_markdown_images(text)
         self.assertListEqual([("multi line alt", "https://a.com/img.png")], matches)
 
     def test_extract_markdown_links_single_match(self):
+        # Verify that one markdown link is extracted correctly.
         matches = extract_markdown_links("A [link](https://example.com) in text")
         self.assertListEqual([("link", "https://example.com")], matches)
 
     def test_extract_markdown_links_multiple_matches(self):
+        # Verify that multiple markdown links are returned in order.
         text = "Read [first](https://a.com) then [second](https://b.com/path) now."
         matches = extract_markdown_links(text)
         self.assertListEqual(
@@ -63,65 +72,78 @@ class TestExtractMarkdown(unittest.TestCase):
         )
 
     def test_extract_markdown_links_empty_text_and_url(self):
+        # Verify that an empty link label and URL are still matched.
         matches = extract_markdown_links("Edge case []()")
         self.assertListEqual([("", "")], matches)
 
     def test_extract_markdown_links_ignores_images(self):
+        # Verify that image syntax is excluded from link extraction.
         text = "![img](https://a.com/img.png) and [site](https://a.com)"
         matches = extract_markdown_links(text)
         self.assertListEqual([("site", "https://a.com")], matches)
 
     def test_extract_markdown_links_no_match_for_malformed_markdown(self):
+        # Verify that malformed link syntax is ignored.
         text = "Broken [text](https://a.com and [other](https://b.com"
         matches = extract_markdown_links(text)
         self.assertListEqual([], matches)
 
     def test_extract_markdown_links_no_match_with_nested_brackets_or_parens(self):
+        # Verify that unsupported nested brackets or parentheses are not matched as links.
         text = "[with [brackets]](https://a.com) [ok](https://a.com/path(test))"
         matches = extract_markdown_links(text)
         self.assertListEqual([], matches)
 
     def test_extract_markdown_links_ignores_double_exclamation_prefix(self):
+        # Verify that text prefixed with "!!" is not treated as a link marker.
         text = "!![not-a-link](https://a.com) but [real](https://b.com)"
         matches = extract_markdown_links(text)
         self.assertListEqual([("real", "https://b.com")], matches)
 
     def test_extract_markdown_links_multiline(self):
+        # Verify that links can be extracted when surrounded by newlines.
         text = "Before\n[multi line link](https://a.com/path)\nAfter"
         matches = extract_markdown_links(text)
         self.assertListEqual([("multi line link", "https://a.com/path")], matches)
 
     def test_extract_title_basic_valid_h1(self):
+        # Verify that a simple h1 line becomes the page title.
         markdown = "# Hello World"
         title = extract_title(markdown)
         self.assertEqual("Hello World", title)
 
     def test_extract_title_h1_with_extra_whitespace(self):
+        # Verify that surrounding whitespace is stripped from the h1 title.
         markdown = "#   Hello World   "
         title = extract_title(markdown)
         self.assertEqual("Hello World", title)
 
     def test_extract_title_h1_not_on_first_line(self):
+        # Verify that the first h1 can appear after non-title content.
         markdown = "Intro paragraph\n# Document Title\nMore text"
         title = extract_title(markdown)
         self.assertEqual("Document Title", title)
 
     def test_extract_title_returns_first_h1_when_multiple_exist(self):
+        # Verify that only the first h1 is returned when multiple h1 lines exist.
         markdown = "# First Title\n## Subtitle\n# Second Title"
         title = extract_title(markdown)
         self.assertEqual("First Title", title)
 
     def test_extract_title_ignores_non_h1_headings(self):
+        # Verify that smaller headings are skipped until an h1 is found.
         markdown = "## Section Title\n### Smaller Heading\n# Actual Title"
         title = extract_title(markdown)
         self.assertEqual("Actual Title", title)
 
     def test_extract_title_allows_empty_h1_title(self):
+        # Verify that an h1 line with no text produces an empty title.
         markdown = "#   "
         title = extract_title(markdown)
         self.assertEqual("", title)
 
     def test_extract_title_raises_exception_when_no_h1_present(self):
+        # Verify that missing h1 titles raise an exception.
         markdown = "Paragraph text\n## Section Title\n- List item"
         with self.assertRaisesRegex(Exception, "no h1 header"):
             extract_title(markdown)

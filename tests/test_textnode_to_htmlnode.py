@@ -1,10 +1,12 @@
 import unittest
 
-from htmlnode import LeafNode
-from textnode import TextNode, TextType, text_node_to_html_node
+from src.htmlnode import LeafNode
+from src.textnode import TextNode, TextType, text_node_to_html_node
+
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_text(self):
+        # Verify that plain text nodes convert to untagged leaf nodes.
         node = TextNode("This is a text node", TextType.TEXT)
         html_node = text_node_to_html_node(node)
         self.assertIsInstance(html_node, LeafNode)
@@ -13,6 +15,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, None)
 
     def test_bold(self):
+        # Verify that bold text nodes convert to <b> elements.
         node = TextNode("bold text", TextType.BOLD)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "b")
@@ -20,6 +23,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, None)
 
     def test_italic(self):
+        # Verify that italic text nodes convert to <i> elements.
         node = TextNode("italic text", TextType.ITALIC)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "i")
@@ -27,6 +31,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, None)
 
     def test_code(self):
+        # Verify that code text nodes convert to <code> elements.
         node = TextNode("x = 1", TextType.CODE)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "code")
@@ -34,6 +39,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, None)
 
     def test_link(self):
+        # Verify that link nodes convert to anchors with an href prop.
         node = TextNode("Boot.dev", TextType.LINK, "https://www.boot.dev")
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "a")
@@ -41,6 +47,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, {"href": "https://www.boot.dev"})
 
     def test_image(self):
+        # Verify that image nodes convert to img elements with src and alt props.
         node = TextNode("A cat", TextType.IMAGE, "https://example.com/cat.png")
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "img")
@@ -51,6 +58,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         )
 
     def test_link_without_url_sets_href_to_none(self):
+        # Verify that missing link URLs are preserved as None in the props.
         node = TextNode("No URL", TextType.LINK)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "a")
@@ -58,6 +66,7 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, {"href": None})
 
     def test_image_without_url_sets_src_to_none(self):
+        # Verify that missing image URLs are preserved as None in the props.
         node = TextNode("No image source", TextType.IMAGE)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "img")
@@ -65,12 +74,14 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, {"src": None, "alt": "No image source"})
 
     def test_empty_text_is_preserved(self):
+        # Verify that empty text values survive conversion unchanged.
         node = TextNode("", TextType.TEXT)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "")
 
     def test_invalid_text_type_raises_value_error(self):
+        # Verify that unsupported text types raise a ValueError.
         node = TextNode("bad type", "not-a-text-type")
         with self.assertRaises(ValueError):
             text_node_to_html_node(node)
